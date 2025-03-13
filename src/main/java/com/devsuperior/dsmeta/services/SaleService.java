@@ -3,9 +3,13 @@ package com.devsuperior.dsmeta.services;
 import java.time.Instant;
 import java.time.LocalDate;
 import java.time.ZoneId;
+import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 
+import com.devsuperior.dsmeta.dto.SaleMinProjectionDTO;
+import com.devsuperior.dsmeta.projections.SaleMinProjection;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -44,5 +48,20 @@ public class SaleService {
 		return result.map(x -> new SaleMinDTO(x));
 
 	}
+
+	public List<SaleMinProjectionDTO> searchSalesSummary(String minDate, String maxDate){
+
+		LocalDate max = (maxDate== null || maxDate.isEmpty()
+				?LocalDate.ofInstant(Instant.now(), ZoneId.systemDefault())
+				:LocalDate.parse(maxDate));
+
+		LocalDate min =( minDate == null || minDate.isEmpty()
+				?max.minusYears(1L)
+				: LocalDate.parse(minDate));
+
+		List<SaleMinProjection> projection = repository.searchSalesSummary(min,max);
+		return projection.stream().map(x-> new SaleMinProjectionDTO(x.getName(),x.getAmount())).collect(Collectors.toList());
+	}
+
 
 }
